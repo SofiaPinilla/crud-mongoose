@@ -14,13 +14,17 @@ const ProductController = {
   },
   async getAll(req, res) {
     try {
-      const products = await Product.find();
+      const { page = 1, limit = 10 } = req.query;
+      const products = await Product.find()
+        .populate("reviews.userId")
+        .limit(limit * 1)
+        .skip((page - 1) * limit);
       res.send(products);
     } catch (error) {
       console.error(error);
-      res.status(500).send(error);
     }
   },
+
   async getById(req, res) {
     try {
       const product = await Product.findById(req.params._id);
@@ -45,26 +49,40 @@ const ProductController = {
   },
   async delete(req, res) {
     try {
-        const product = await Product.deleteOne({_id:req.params._id})
-    //   const product = await Product.findByIdAndDelete(req.params._id);
+      const product = await Product.deleteOne({ _id: req.params._id });
+      //   const product = await Product.findByIdAndDelete(req.params._id);
       res.send({ product, message: "Product deleted" });
     } catch (error) {
       console.error(error);
-      res
-        .status(500)
-        .send({
-          message: "there was a problem trying to remove the publication",
-        });
+      res.status(500).send({
+        message: "there was a problem trying to remove the publication",
+      });
     }
   },
   async update(req, res) {
     try {
-      const product = await Product.findByIdAndUpdate(req.params._id, req.body, { new: true })
+      const product = await Product.findByIdAndUpdate(
+        req.params._id,
+        req.body,
+        { new: true }
+      );
       res.send({ message: "product successfully updated", product });
     } catch (error) {
       console.error(error);
     }
   },
-
+  async insertComment(req, res) {
+    try {
+      const product = await Product.findByIdAndUpdate(
+        req.params._id,
+        { $push: { reviews: { ...req.body, userId: req.user._id } } },
+        { new: true }
+      );
+      res.send(product);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: "There was a problem with your review" });
+    }
+  },
 };
 module.exports = ProductController;

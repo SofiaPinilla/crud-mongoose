@@ -37,7 +37,22 @@ const UserController = {
         message: "Hubo un problema al intentar desconectar al usuario",
       });
     }
-  }
+  },
+  async getInfo(req, res) {
+    try {
+      const user = await User.findById(req.user._id)
+      .populate({
+        path: "orderIds",
+        populate: {
+          path: "productIds",
+        },
+      });
+
+      res.send(user);
+    } catch (error) {
+      console.error(error);
+    }
+  },
 };
 
 module.exports = UserController;
