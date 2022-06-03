@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const { jwt_secret } = require("../config/keys.js");
+require("dotenv").config();
+const jwt_secret = process.env.JWT_SECRET
 
 const UserController = {
   async register(req, res) {
