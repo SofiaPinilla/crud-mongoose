@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const User = require("../models/User");
 
 const ProductController = {
   async create(req, res) {
@@ -82,6 +83,33 @@ const ProductController = {
     } catch (error) {
       console.error(error);
       res.status(500).send({ message: "There was a problem with your review" });
+    }
+  },
+  async like(req, res) {
+    try {
+      const existProduct = await Product.findById(req.params._id)
+      if (!existProduct.likes.includes(req.user._id)){
+        const product = await Product.findByIdAndUpdate(
+          req.params._id,
+          { $push: { likes: req.user._id } },
+          { new: true }
+        );
+  
+        await User.findByIdAndUpdate(
+          req.user._id,
+          { $push: { wishList: req.params._id } },
+          { new: true }
+        );
+        res.send(product);
+      }
+      else {
+        res.status(400).send({message: 'Crack ya le has dado al like :('})
+      }
+
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: "There was a problem with your like" });
     }
   },
 };
